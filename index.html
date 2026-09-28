@@ -1,0 +1,455 @@
+<title>KI-Kompass für Berater</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --paper:#F2F4F6; --surface:#FFFFFF; --ink:#16202A; --muted:#5A6673; --line:#D8DEE4;
+  --accent:#2B44C7; --accent-ink:#FFFFFF; --accent-soft:#E5E9FB;
+  --ok:#0E7A5A; --ok-soft:#E1F3EC; --bad:#B3261E; --bad-soft:#FBE7E5;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0F151B; --surface:#172029; --ink:#E6EBF0; --muted:#95A2AF; --line:#2A3642;
+    --accent:#8FA2FF; --accent-ink:#0F151B; --accent-soft:#1E2750;
+    --ok:#4FC79C; --ok-soft:#10302A; --bad:#F2837B; --bad-soft:#3A1A18;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0F151B; --surface:#172029; --ink:#E6EBF0; --muted:#95A2AF; --line:#2A3642;
+  --accent:#8FA2FF; --accent-ink:#0F151B; --accent-soft:#1E2750;
+  --ok:#4FC79C; --ok-soft:#10302A; --bad:#F2837B; --bad-soft:#3A1A18;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:17px/1.55 var(--body);padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,7vw,2.8rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.3rem,4.6vw,1.6rem);letter-spacing:-.01em}
+p{margin:0}
+.label{font:500 .72rem/1 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.lede{color:var(--muted);max-width:60ch}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Start */
+.hero{display:flex;flex-direction:column;gap:12px}
+.hero h1 span{color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:460px){.cats{grid-template-columns:1fr}}
+.cat{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;border-radius:10px;border:1.5px solid var(--line);background:transparent}
+.cat strong{font-family:var(--display);font-size:1.05rem}
+.cat small{color:var(--muted);font-size:.9rem;line-height:1.35}
+.cat[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cat .count{font:500 .72rem var(--mono);color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.btn{border:none;border-radius:10px;padding:14px 22px;font-weight:600;background:var(--accent);color:var(--accent-ink)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.best{font-size:.95rem;color:var(--muted)}
+
+/* Quiz */
+.topbar{display:flex;flex-direction:column;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);padding-block:8px;z-index:2}
+.meta{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.qtext{font-family:var(--display);font-weight:600;font-size:clamp(1.2rem,4.4vw,1.45rem);line-height:1.3;text-wrap:pretty}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;text-align:left;padding:14px 16px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);line-height:1.4}
+.opt .key{font:500 .8rem/1.6 var(--mono);color:var(--muted);width:1.4em}
+.opt:not([disabled]):hover{border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .key{color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .key{color:var(--bad)}
+.opt.dim{opacity:.55}
+.feedback{display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line);padding-top:18px}
+.verdict{font-family:var(--display);font-size:1.15rem;font-weight:700}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.client{background:var(--accent-soft);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.client p{font-style:italic}
+
+/* Result */
+.score{font:700 clamp(3rem,14vw,4.5rem)/1 var(--display);font-variant-numeric:tabular-nums}
+.score small{font-size:.4em;color:var(--muted);font-weight:600}
+.catres{display:flex;flex-direction:column;gap:12px}
+.catres div{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-variant-numeric:tabular-nums}
+.catres .bar{grid-column:1/-1}
+.missed{display:flex;flex-direction:column;gap:14px;padding:0;margin:0;list-style:none}
+.missed li{display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.missed li:last-child{border-bottom:none;padding-bottom:0}
+.missed .ans{color:var(--ok);font-weight:600}
+.foot{color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main class="wrap">
+  <!-- START -->
+  <section id="start" class="wrap" style="gap:24px">
+    <div class="hero">
+      <span class="label">Selbstlernmodul · Management Consulting</span>
+      <h1>KI-Kompass für <span>Berater</span></h1>
+      <p class="lede">Grundwissen zu KI, so wie es im Kundengespräch gebraucht wird. Jede Frage kommt mit Erklärung und einem Satz, den du beim Kunden sagen kannst.</p>
+    </div>
+    <div class="panel">
+      <div class="row"><h2>Themen wählen</h2><span class="label" id="selInfo"></span></div>
+      <div class="cats" id="cats"></div>
+      <div class="row">
+        <span class="best" id="best"></span>
+        <button class="btn" id="startBtn">Quiz starten</button>
+      </div>
+    </div>
+    <p class="foot">Stand: September 2026. Regulatorische Aussagen vereinfacht, keine Rechtsberatung.</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="wrap" hidden>
+    <div class="topbar">
+      <div class="meta"><span class="label" id="qCat"></span><span class="label" id="qPos"></span></div>
+      <div class="bar"><i id="qBar"></i></div>
+    </div>
+    <p class="qtext" id="qText"></p>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="fb" hidden>
+      <p class="verdict" id="verdict"></p>
+      <p id="why"></p>
+      <div class="client"><span class="label">Im Kundengespräch</span><p id="client"></p></div>
+      <div class="row"><span class="label" id="liveScore"></span><button class="btn" id="nextBtn">Weiter</button></div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="wrap" hidden>
+    <div class="hero">
+      <span class="label">Ergebnis</span>
+      <p class="score" id="score"></p>
+      <p class="lede" id="scoreText"></p>
+    </div>
+    <div class="panel"><h2>Nach Thema</h2><div class="catres" id="catres"></div></div>
+    <div class="panel" id="missedPanel"><h2>Zum Nacharbeiten</h2><ul class="missed" id="missed"></ul></div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="retryWrong">Fehler wiederholen</button>
+      <button class="btn ghost" id="restart">Zur Themenauswahl</button>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   FRAGENKATALOG — hier neue Fragen ergänzen.
+   c = Kategorie-ID, q = Frage, o = Antworten (erste = richtig,
+   Reihenfolge wird beim Anzeigen gemischt), w = Erklärung,
+   k = Formulierung fürs Kundengespräch
+   ============================================================ */
+const CATS = {
+  konzepte:  {name:"Konzepte",              desc:"LLM, Halluzination, RAG, Agenten"},
+  anwendung: {name:"Anwendung",             desc:"Use Cases, Build vs. Buy, Business Case"},
+  risiko:    {name:"Risiko & Regulierung",  desc:"EU AI Act, Datenschutz, Governance"},
+  mythen:    {name:"Mythen",                desc:"Typische Fehlannahmen beim Kunden"}
+};
+
+const QUESTIONS = [
+  // --- KONZEPTE ---
+  {c:"konzepte",
+   q:"Was macht ein Large Language Model (LLM) im Kern, wenn es eine Antwort erzeugt?",
+   o:["Es berechnet Wort für Wort (Token für Token) die wahrscheinlichste Fortsetzung des Textes",
+      "Es sucht die passende Antwort in einer geprüften internen Wissensdatenbank",
+      "Es versteht die Frage wie ein Mensch und leitet die Antwort logisch her",
+      "Es kopiert die ähnlichste Antwort aus seinen Trainingsdaten"],
+   w:"LLMs sind Vorhersagemodelle: Sie erzeugen die statistisch plausibelste Fortsetzung auf Basis von Mustern aus riesigen Textmengen. Das erklärt, warum sie flüssig formulieren und trotzdem falsch liegen können.",
+   k:"„Das Modell ist ein extrem guter Formulierer, kein Faktenlexikon. Deshalb bauen wir Prüfschritte ein, wo Fakten zählen.“"},
+  {c:"konzepte",
+   q:"Ein Kunde ist irritiert: Das KI-Tool hat eine Quelle zitiert, die es gar nicht gibt. Was ist die treffendste Erklärung?",
+   o:["Das Modell erzeugt plausiblen Text ohne eingebaute Wahrheitsprüfung – das nennt man Halluzination",
+      "Die Quelle wurde nach dem Training gelöscht und ist deshalb nicht mehr auffindbar",
+      "Das Tool wurde manipuliert und sollte sofort abgeschaltet werden",
+      "Das passiert nur bei kostenlosen Modellen, Enterprise-Versionen halluzinieren nicht"],
+   w:"Halluzinationen sind eine Eigenschaft aller heutigen LLMs, auch der teuersten. Man reduziert sie durch Grounding (z. B. RAG mit echten Dokumenten), Quellenangaben und menschliche Prüfung – beseitigt sie aber nicht vollständig.",
+   k:"„Halluzinationen lassen sich stark reduzieren, aber nicht ausschließen. Die Frage ist: Wo im Prozess prüft ein Mensch?“"},
+  {c:"konzepte",
+   q:"Eine Bank will einen Assistenten, der Fragen zu ihren internen Richtlinien beantwortet. Die Richtlinien ändern sich mehrmals im Jahr. Welcher Ansatz passt am besten?",
+   o:["Retrieval-Augmented Generation (RAG): relevante Dokumente abrufen und dem Modell als Kontext mitgeben",
+      "Ein eigenes Modell von Grund auf mit den Richtlinien trainieren",
+      "Ein Standardmodell per Fine-Tuning einmalig auf die Richtlinien anpassen",
+      "Die Richtlinien einmal in einen langen Prompt kopieren und diesen fest einbauen"],
+   w:"RAG holt zur Laufzeit die aktuellen Dokumente und kann Quellen anzeigen. Fine-Tuning verändert eher Stil und Verhalten und müsste bei jeder Änderung wiederholt werden. Ein eigenes Modell ist für diesen Zweck unverhältnismäßig.",
+   k:"„Wir lassen das Modell in Ihren aktuellen Dokumenten nachschlagen, statt es auswendig lernen zu lassen. So bleiben Antworten aktuell und belegbar.“"},
+  {c:"konzepte",
+   q:"Was unterscheidet einen KI-Agenten von einem klassischen Chatbot?",
+   o:["Er plant mehrere Schritte selbst und nutzt Werkzeuge oder Systeme, um ein Ziel zu erreichen",
+      "Er basiert auf einem grundlegend anderen Modelltyp als ein Chatbot",
+      "Er antwortet schneller, weil er keine Sprachmodelle verwendet",
+      "Er darf nur intern eingesetzt werden, nicht im Kundenkontakt"],
+   w:"Agenten nutzen meist dieselben LLMs, bekommen aber Zugriff auf Werkzeuge (Systeme, APIs, Dateien) und arbeiten Aufgaben in mehreren Schritten ab. Damit steigt der Nutzen – und das Risiko, weil der Agent tatsächlich handelt.",
+   k:"„Beim Agenten ist die Kernfrage nicht die Intelligenz, sondern die Berechtigung: Was darf er ohne Freigabe tun?“"},
+  {c:"konzepte",
+   q:"Ein Vorstand fürchtet: „Wenn wir Kundendaten in das Tool eingeben, lernt das Modell sie und gibt sie an andere weiter.“ Was stimmt?",
+   o:["Die Nutzung (Inferenz) verändert das Modell nicht; ob Daten fürs Training verwendet werden, regeln Vertrag und Einstellungen",
+      "Jede Eingabe wird automatisch Teil des Modells und ist für andere Nutzer abrufbar",
+      "Das Risiko besteht nicht, weil KI-Modelle grundsätzlich keine Daten speichern",
+      "Das lässt sich nur durch ein komplett selbst betriebenes Modell verhindern"],
+   w:"Training (Modell lernt) und Inferenz (Modell wird genutzt) sind getrennt. Enterprise-Verträge schließen das Training auf Kundendaten üblicherweise aus. Trotzdem relevant: Speicherung von Logs, Speicherort und Zugriffsrechte.",
+   k:"„Entscheidend ist der Vertrag, nicht die Technik: Wir prüfen Trainingsausschluss, Speicherdauer und Datenstandort.“"},
+
+  // --- ANWENDUNG ---
+  {c:"anwendung",
+   q:"Eine Bank sucht ihren ersten GenAI-Use-Case mit schnellem, sicherem Nutzen. Welcher eignet sich am besten?",
+   o:["Interner Assistent, der Entwürfe und Zusammenfassungen erstellt, die ein Mitarbeiter prüft",
+      "Vollautomatische Kreditentscheidung für Privatkunden",
+      "Chatbot, der Kunden eigenständig individuelle Anlageempfehlungen gibt",
+      "Automatische Beantwortung von Beschwerden der Aufsicht ohne Freigabe"],
+   w:"Gute Einstiegs-Use-Cases haben hohes Volumen, klaren Zeitgewinn und einen Menschen in der Schleife. Kundenwirksame Entscheidungen und Anlageberatung bringen regulatorische Pflichten und Haftungsrisiken mit.",
+   k:"„Starten wir dort, wo ein Fehler intern auffällt, bevor er beim Kunden ankommt.“"},
+  {c:"anwendung",
+   q:"Ein mittelgroßer Versicherer will eingehende E-Mails automatisch nach Anliegen sortieren. Was ist in der Regel die sinnvollste Umsetzung?",
+   o:["Ein vorhandenes Sprachmodell per API oder Plattform nutzen und mit Beispielen konfigurieren",
+      "Ein eigenes Sprachmodell von Grund auf trainieren",
+      "Ein Rechenzentrum mit eigenen GPUs aufbauen, um unabhängig zu sein",
+      "Warten, bis der Kernsystemanbieter eine Lösung liefert"],
+   w:"Für Standardaufgaben wie Klassifikation sind verfügbare Modelle sehr gut. Eigene Modelle lohnen sich nur bei sehr speziellen Daten und großem Volumen. Differenzierung entsteht über Prozessintegration, nicht über das Modell.",
+   k:"„Das Modell ist eingekauft. Ihr Wettbewerbsvorteil liegt darin, wie gut wir es in Ihren Prozess einbauen.“"},
+  {c:"anwendung",
+   q:"Ein Pilot zeigt 30 % Zeitersparnis pro Vorgang. Der CFO fragt: „Wie viel sparen wir also?“ Welche Antwort ist am belastbarsten?",
+   o:["Zeitersparnis wird erst zur Einsparung, wenn Kapazität tatsächlich reduziert, umgeschichtet oder für Wachstum genutzt wird",
+      "30 % der Personalkosten des Bereichs, ab dem ersten Monat",
+      "Die Einsparung lässt sich bei KI grundsätzlich nicht beziffern",
+      "30 % der Personalkosten abzüglich der Lizenzkosten"],
+   w:"Gewonnene Minuten verteilen sich oft im Arbeitstag, ohne dass Kosten sinken. Ein ehrlicher Business Case benennt den Realisierungsmechanismus und rechnet Prüfaufwand, Laufkosten und Adoptionskurve ein.",
+   k:"„Die 30 % sind Potenzial. Zur Einsparung werden sie erst durch eine Entscheidung, was wir mit der freien Kapazität tun.“"},
+  {c:"anwendung",
+   q:"Viele GenAI-Piloten kommen nie in den Produktivbetrieb. Was ist der häufigste Grund?",
+   o:["Fehlende Integration in Prozesse und Systeme, unklare Verantwortung und kein messbares Ziel",
+      "Die Modelle sind technisch noch nicht gut genug",
+      "Die Lizenzkosten steigen nach dem Pilot stark an",
+      "Mitarbeiter können die Tools nicht bedienen"],
+   w:"Die Technik funktioniert im Pilot meist. Es scheitert an der Übersetzung in den Betrieb: Datenanbindung, Prozessänderung, Ownership im Fachbereich und KPIs, an denen der Erfolg gemessen wird.",
+   k:"„Bevor wir den Pilot starten: Wer im Fachbereich verantwortet das Ergebnis, und an welcher Kennzahl messen wir es?“"},
+  {c:"anwendung",
+   q:"Was treibt bei der Nutzung eines Sprachmodells per API hauptsächlich die laufenden Kosten?",
+   o:["Die Menge verarbeiteter Tokens (Ein- und Ausgabe) und die Wahl des Modells",
+      "Die Anzahl der Mitarbeiter mit Zugang zum Unternehmensnetz",
+      "Die Anzahl der Trainingsdurchläufe pro Monat",
+      "Ein fester Jahresbetrag, unabhängig von der Nutzung"],
+   w:"API-Preise werden pro Token abgerechnet (grob: ein Token ≈ ¾ Wort). Große Modelle kosten pro Token ein Vielfaches kleiner Modelle. Lange Dokumente als Kontext und viele Aufrufe pro Vorgang treiben die Kosten.",
+   k:"„Die Kosten skalieren mit Nutzung und Modellwahl. Für Routineaufgaben reicht oft ein kleineres, deutlich günstigeres Modell.“"},
+
+  // --- RISIKO & REGULIERUNG ---
+  {c:"risiko",
+   q:"Nach welcher Grundlogik reguliert der EU AI Act KI-Systeme?",
+   o:["Risikobasiert: verbotene Praktiken, Hochrisiko-Systeme, Transparenzpflichten, minimales Risiko",
+      "Nach Unternehmensgröße: Nur Konzerne sind betroffen",
+      "Nach Technologie: Nur neuronale Netze werden reguliert",
+      "Nach Branche: Nur Banken und Versicherungen fallen darunter"],
+   w:"Der AI Act knüpft Pflichten an den Einsatzzweck. Je höher das Risiko für Grundrechte und Sicherheit, desto strenger die Anforderungen. Dazu kommen eigene Pflichten für Anbieter von General-Purpose-AI-Modellen.",
+   k:"„Nicht die Technologie entscheidet über die Pflichten, sondern wofür Sie sie einsetzen.“"},
+  {c:"risiko",
+   q:"Welcher Einsatz im Finanzsektor gilt nach dem EU AI Act ausdrücklich als Hochrisiko?",
+   o:["Bewertung der Kreditwürdigkeit natürlicher Personen",
+      "Erkennung von Finanzbetrug",
+      "Zusammenfassen interner Sitzungsprotokolle",
+      "Erstellen von Marketingtexten"],
+   w:"Kreditwürdigkeitsprüfung und Kredit-Scoring von Privatpersonen sowie Risikobewertung und Preisbildung in der Lebens- und Krankenversicherung stehen in Anhang III. Betrugserkennung ist dort ausdrücklich ausgenommen.",
+   k:"„Bei Scoring von Privatkunden sprechen wir über Hochrisiko-KI mit Anforderungen an Daten, Dokumentation und menschliche Aufsicht.“"},
+  {c:"risiko",
+   q:"Ein Kunde setzt einen KI-Chatbot im Kundenservice ein. Welche Pflicht aus dem EU AI Act ist hier zentral?",
+   o:["Kunden müssen erkennen können, dass sie mit einer KI interagieren",
+      "Der Chatbot muss von der BaFin vorab zugelassen werden",
+      "Jede Antwort muss vor dem Versand von einem Menschen freigegeben werden",
+      "Chatbots sind im Kundenkontakt von Finanzinstituten verboten"],
+   w:"Für Systeme, die direkt mit Menschen interagieren, gelten Transparenzpflichten: Nutzer sind zu informieren, dass sie mit KI sprechen, sofern das nicht offensichtlich ist. Eine Vorabzulassung gibt es nicht.",
+   k:"„Transparenz ist Pflicht und schafft Vertrauen: Der Kunde muss wissen, dass er mit einem Assistenten spricht.“"},
+  {c:"risiko",
+   q:"Mitarbeiter kopieren Kundendaten in öffentliche KI-Tools, weil intern nichts Vergleichbares existiert. Was ist die wirksamste Reaktion?",
+   o:["Eine freigegebene, sichere Lösung bereitstellen und klare Nutzungsregeln kommunizieren",
+      "Den Zugriff auf alle KI-Websites sperren und es dabei belassen",
+      "Nichts tun, solange kein Vorfall bekannt ist",
+      "Einzelne Mitarbeiter abmahnen, um ein Zeichen zu setzen"],
+   w:"Verbote ohne Alternative verlagern die Nutzung auf private Geräte (Schatten-KI). Wirksam ist die Kombination aus gutem internem Angebot, klarer Richtlinie und Schulung.",
+   k:"„Schatten-KI ist ein Signal für Bedarf. Die Antwort ist ein sicheres Angebot, nicht nur ein Verbot.“"},
+  {c:"risiko",
+   q:"Eine Bank will ein KI-Modell in einem aufsichtsrelevanten Prozess einsetzen. Was erwartet die Aufsicht typischerweise?",
+   o:["Governance mit klarer Verantwortung, Validierung, Dokumentation und Nachvollziehbarkeit",
+      "Den Nachweis, dass das Modell fehlerfrei arbeitet",
+      "Den Einsatz ausschließlich europäischer Modelle",
+      "Einen vollständigen Verzicht auf Drittanbieter"],
+   w:"Aufseher erwarten, dass KI-Modelle wie andere Modelle behandelt werden: im Modellrisikomanagement erfasst, validiert, überwacht und mit klar benannter Verantwortung. Auslagerungsregeln gelten auch für KI-Anbieter.",
+   k:"„KI braucht keine Sonderregeln, sondern gehört in Ihr bestehendes Modellrisiko- und Auslagerungsmanagement.“"},
+
+  // --- MYTHEN ---
+  {c:"mythen",
+   q:"„Bevor wir mit KI starten, müssen erst alle unsere Daten sauber sein.“ Wie ordnest du das ein?",
+   o:["Zu pauschal: Die Datenanforderung hängt vom Use Case ab, viele GenAI-Anwendungen arbeiten mit vorhandenen Dokumenten",
+      "Richtig: Ohne vollständige Datenbereinigung ist KI nicht einsetzbar",
+      "Falsch: Datenqualität spielt bei KI keine Rolle mehr",
+      "Richtig, aber nur für Banken, nicht für Versicherungen"],
+   w:"Ein unternehmensweites Datenprogramm als Voraussetzung verzögert Nutzen um Jahre. Besser: Use Case wählen, genau die dafür nötigen Daten prüfen und verbessern. Datenqualität bleibt wichtig, aber zielgerichtet.",
+   k:"„Wir brauchen nicht alle Daten sauber, sondern die richtigen Daten für den ersten Use Case.“"},
+  {c:"mythen",
+   q:"„Wir nehmen einfach immer das größte, neueste Modell, dann sind wir auf der sicheren Seite.“ Was ist das Problem?",
+   o:["Größere Modelle sind teurer und langsamer; für viele Aufgaben reicht ein kleineres Modell gleich gut",
+      "Es gibt kein Problem, größere Modelle sind in jeder Hinsicht überlegen",
+      "Große Modelle sind in der EU nicht zugelassen",
+      "Kleinere Modelle halluzinieren grundsätzlich nie"],
+   w:"Modellwahl ist eine Abwägung aus Qualität, Kosten, Geschwindigkeit und Datenschutz. Viele Architekturen kombinieren ein starkes Modell für schwierige Schritte mit günstigen Modellen für Routine.",
+   k:"„Wir wählen das Modell wie einen Mitarbeiter: passend zur Aufgabe, nicht immer den teuersten.“"},
+  {c:"mythen",
+   q:"„KI wird in unserem Backoffice ganze Stellen ersetzen.“ Welche Einordnung ist am treffendsten?",
+   o:["KI automatisiert vor allem einzelne Aufgaben; wie sich Rollen verändern, hängt vom Prozessdesign ab",
+      "Richtig, alle Backoffice-Rollen fallen innerhalb eines Jahres weg",
+      "Falsch, KI hat keinerlei Einfluss auf Arbeitsinhalte",
+      "Richtig, aber nur bei Rollen ohne Kundenkontakt"],
+   w:"Wirkungsanalysen setzen auf Aufgabenebene an: Welche Tätigkeiten einer Rolle lassen sich automatisieren oder beschleunigen? Der Effekt auf Stellen entsteht erst durch bewusste Neugestaltung von Prozessen und Rollen.",
+   k:"„Schauen wir auf Aufgaben statt auf Stellen. Dann sehen wir, wo KI wirklich entlastet.“"},
+  {c:"mythen",
+   q:"„Das Modell kennt doch die aktuelle Zinsentwicklung, es ist ja brandneu.“ Was stimmt?",
+   o:["Modelle haben einen Wissensstichtag; aktuelle Informationen kennen sie nur mit Anbindung an Suche oder Datenquellen",
+      "Modelle aktualisieren ihr Wissen täglich automatisch",
+      "Neue Modelle kennen alle Daten bis zum heutigen Tag",
+      "Aktuelle Daten sind für Sprachmodelle technisch nicht verarbeitbar"],
+   w:"Trainingswissen endet an einem Stichtag. Aktualität kommt über Websuche, Schnittstellen oder RAG. Ohne diese Anbindung antwortet das Modell mit veraltetem Wissen, oft ohne das zu kennzeichnen.",
+   k:"„Für aktuelle Zahlen binden wir das Modell an Ihre Quellen an, statt auf sein Gedächtnis zu vertrauen.“"},
+  {c:"mythen",
+   q:"„KI-Ergebnisse sind objektiv, weil keine Menschen mit ihren Vorurteilen beteiligt sind.“ Was ist das Problem?",
+   o:["Modelle lernen aus menschlichen Daten und können deren Verzerrungen übernehmen oder verstärken",
+      "Es gibt kein Problem, maschinelle Entscheidungen sind per Definition neutral",
+      "Verzerrungen entstehen nur bei Bildmodellen, nicht bei Textmodellen",
+      "Verzerrungen verschwinden, sobald man genug Rechenleistung einsetzt"],
+   w:"Bias in Trainingsdaten führt zu Bias im Ergebnis, etwa bei Kreditvergabe oder Recruiting. Deshalb verlangen Regulierung und gute Governance Tests auf Fairness und menschliche Aufsicht bei relevanten Entscheidungen.",
+   k:"„KI ist so fair wie die Daten, aus denen sie gelernt hat. Das müssen wir testen, nicht annehmen.“"}
+];
+
+/* ============================================================ */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+let selected = new Set(Object.keys(CATS));
+let deck = [], idx = 0, results = [];
+
+function renderCats(){
+  $("cats").innerHTML = "";
+  for(const [id,c] of Object.entries(CATS)){
+    const n = QUESTIONS.filter(q=>q.c===id).length;
+    const b = document.createElement("button");
+    b.className = "cat"; b.id = "cat-"+id;
+    b.setAttribute("aria-pressed", selected.has(id));
+    b.innerHTML = `<strong>${c.name}</strong><small>${c.desc}</small><span class="count">${n} Fragen</span>`;
+    b.onclick = () => { selected.has(id) ? selected.delete(id) : selected.add(id); renderCats(); };
+    $("cats").appendChild(b);
+  }
+  const total = QUESTIONS.filter(q=>selected.has(q.c)).length;
+  $("selInfo").textContent = total + " Fragen";
+  $("startBtn").disabled = total === 0;
+  const best = store.get("kiq-best");
+  $("best").textContent = best ? `Bestes Ergebnis: ${best.s} von ${best.t}` : "Dauer: ca. 1 Minute pro Frage";
+}
+
+function show(id){ for(const s of ["start","quiz","result"]) $(s).hidden = s!==id; window.scrollTo(0,0); }
+
+function begin(list){
+  deck = shuffle(list).map(q => {
+    const opts = shuffle(q.o.map((t,i)=>({t, ok:i===0})));
+    return {...q, opts};
+  });
+  idx = 0; results = [];
+  show("quiz"); renderQ();
+}
+
+function renderQ(){
+  const q = deck[idx];
+  $("qCat").textContent = CATS[q.c].name;
+  $("qPos").textContent = `Frage ${idx+1} / ${deck.length}`;
+  $("qBar").style.width = (idx/deck.length*100)+"%";
+  $("qText").textContent = q.q;
+  $("fb").hidden = true;
+  $("opts").innerHTML = "";
+  q.opts.forEach((o,i) => {
+    const b = document.createElement("button");
+    b.className = "opt"; b.id = "opt-"+i;
+    b.innerHTML = `<span class="key">${"ABCD"[i]}</span><span></span>`;
+    b.lastChild.textContent = o.t;
+    b.onclick = () => answer(i);
+    $("opts").appendChild(b);
+  });
+}
+
+function answer(i){
+  const q = deck[idx];
+  if(!$("fb").hidden) return;
+  const ok = q.opts[i].ok;
+  results.push({q, ok});
+  [...$("opts").children].forEach((b,j) => {
+    b.disabled = true;
+    if(q.opts[j].ok) b.classList.add("correct");
+    else if(j===i) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  $("verdict").textContent = ok ? "Richtig." : "Nicht ganz.";
+  $("verdict").className = "verdict " + (ok ? "ok" : "bad");
+  $("why").textContent = q.w;
+  $("client").textContent = q.k;
+  const s = results.filter(r=>r.ok).length;
+  $("liveScore").textContent = `${s} von ${results.length} richtig`;
+  $("nextBtn").textContent = idx === deck.length-1 ? "Ergebnis ansehen" : "Weiter";
+  $("fb").hidden = false;
+  $("qBar").style.width = ((idx+1)/deck.length*100)+"%";
+  $("nextBtn").focus({preventScroll:true});
+  $("fb").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"nearest"});
+}
+
+function next(){ idx++; idx < deck.length ? (renderQ(), window.scrollTo(0,0)) : finish(); }
+
+function finish(){
+  const s = results.filter(r=>r.ok).length, t = results.length, pct = Math.round(s/t*100);
+  $("score").innerHTML = `${s}<small> / ${t}</small>`;
+  $("scoreText").textContent = pct>=85 ? "Starke Basis. Du kannst KI-Themen beim Kunden sicher einordnen."
+    : pct>=60 ? "Solide Grundlage. Schau dir die offenen Punkte unten noch einmal an."
+    : "Guter Startpunkt. Die Erklärungen unten decken die wichtigsten Lücken ab.";
+  const best = store.get("kiq-best");
+  if(t >= 5 && (!best || s/t > best.s/best.t)) store.set("kiq-best", {s, t});
+
+  $("catres").innerHTML = "";
+  for(const [id,c] of Object.entries(CATS)){
+    const r = results.filter(x=>x.q.c===id); if(!r.length) continue;
+    const k = r.filter(x=>x.ok).length;
+    const d = document.createElement("div");
+    d.innerHTML = `<span>${c.name}</span><span>${k} / ${r.length}</span><div class="bar"><i style="width:${k/r.length*100}%"></i></div>`;
+    $("catres").appendChild(d);
+  }
+  const missed = results.filter(r=>!r.ok);
+  $("missedPanel").hidden = !missed.length;
+  $("retryWrong").hidden = !missed.length;
+  $("missed").innerHTML = "";
+  missed.forEach(({q}) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="label"></span><strong></strong><span class="ans"></span><span></span>`;
+    li.children[0].textContent = CATS[q.c].name;
+    li.children[1].textContent = q.q;
+    li.children[2].textContent = "→ " + q.o[0];
+    li.children[3].textContent = q.w;
+    $("missed").appendChild(li);
+  });
+  show("result");
+}
+
+$("startBtn").onclick = () => begin(QUESTIONS.filter(q=>selected.has(q.c)));
+$("nextBtn").onclick = next;
+$("restart").onclick = () => { renderCats(); show("start"); };
+$("retryWrong").onclick = () => begin(results.filter(r=>!r.ok).map(r=>QUESTIONS.find(q=>q.q===r.q.q)));
+document.addEventListener("keydown", e => {
+  if($("quiz").hidden) return;
+  const n = "1234".indexOf(e.key) >= 0 ? "1234".indexOf(e.key) : "abcd".indexOf(e.key.toLowerCase());
+  if(n >= 0 && $("fb").hidden && e.key.length===1) answer(n);
+});
+renderCats();
+</script>
