@@ -38,6 +38,8 @@
 [hidden]{display:none!important}
 body{background:var(--paper);color:var(--ink);font:17px/1.55 var(--body);padding-inline:16px;padding-block:24px 48px}
 .wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.wrap > .wrap{width:100%;min-width:0}
+.article{min-width:0}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
 h1{font-size:clamp(2rem,7vw,2.8rem);letter-spacing:-.02em}
 h2{font-size:clamp(1.3rem,4.6vw,1.6rem);letter-spacing:-.01em}
@@ -133,6 +135,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* Lektionen */
 .lessons{display:flex;flex-direction:column;gap:10px}
+.lessons .part{font-size:1.02rem;margin-top:10px}
+.lessons .part:first-child{margin-top:0}
 .lcard{display:grid;grid-template-columns:2.2rem 1fr auto;gap:4px 14px;align-items:start;text-align:left;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
 .lcard:hover{border-color:var(--accent)}
 .lnum{font:500 1rem/1.5 var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
@@ -188,7 +192,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="hero">
       <span class="label">Selbstlernmodul · Management Consulting</span>
       <h1>KI-Kompass für <span>Berater</span></h1>
-      <p class="lede">Wie Konzerne Sprachmodelle technisch einsetzen, vom Modell bis zum Operating Model. Acht Lektionen zum Durchlesen, danach testest du dein Wissen im Quiz.</p>
+      <p class="lede">Wie Konzerne Sprachmodelle technisch einsetzen und wie man Agenten baut, die zuverlässig arbeiten. Elf Lektionen zum Durchlesen, danach testest du dein Wissen im Quiz.</p>
     </div>
     <div class="row"><h2>Lektionen</h2><span class="label" id="readInfo"></span></div>
     <div class="lessons" id="lessons"></div>
@@ -267,7 +271,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
    Reihenfolge wird beim Anzeigen gemischt), w = Erklärung,
    k = Formulierung fürs Kundengespräch
    ============================================================ */
-const TRACKS = {basis:"Grundlagen", plattform:"KI-Plattform im Konzern"};
+const TRACKS = {basis:"Grundlagen", plattform:"KI-Plattform im Konzern", agenten:"Agenten bauen"};
 const CATS = {
   konzepte:     {t:"basis", name:"Konzepte",             desc:"LLM, Halluzination, RAG, Agenten"},
   anwendung:    {t:"basis", name:"Anwendung",            desc:"Use Cases, Build vs. Buy, Business Case"},
@@ -276,7 +280,8 @@ const CATS = {
   cio:          {t:"plattform", name:"CIO-Entscheidungen", desc:"Copilot vs. Plattform, Build vs. Buy, Souveränität"},
   architektur:  {t:"plattform", name:"Architektur",      desc:"Gateway, Vektorsuche, MCP, Multi-Modell"},
   betrieb:      {t:"plattform", name:"Betrieb & Sicherheit", desc:"Evaluation, Kosten, Prompt Injection, Datenresidenz"},
-  orgmodell:    {t:"plattform", name:"Operating Model",  desc:"Plattformteam, Use-Case-Pipeline, Befähigung"}
+  orgmodell:    {t:"plattform", name:"Operating Model",  desc:"Plattformteam, Use-Case-Pipeline, Befähigung"},
+  agent:        {t:"agenten", name:"Context & Harness Engineering", desc:"Kontext, Agentenschleife, Gedächtnis"}
 };
 
 /* Ebenen der Referenzarchitektur (Lernmodul) */
@@ -660,7 +665,65 @@ const QUESTIONS = [
       "Die IT-Abteilung, weil KI ein Technologiethema ist",
       "Der Modellanbieter, weil er die Qualität des Modells garantiert"],
    w:"Nutzen entsteht nur, wenn sich der Prozess ändert, und das kann nur der Fachbereich verantworten. Wenn das Plattformteam den Nutzen verantworten soll, bleiben Use Cases häufig technische Demos ohne Wirkung im Geschäft.",
-   k:"„Jeder Use Case braucht einen Business Owner mit Namen. Ohne ihn starten wir nicht.“"}
+   k:"„Jeder Use Case braucht einen Business Owner mit Namen. Ohne ihn starten wir nicht.“"},
+
+  // --- CONTEXT & HARNESS ENGINEERING ---
+  {c:"agent",
+   q:"Ein Agent erledigt im Pilot kurze Aufgaben zuverlässig, macht bei langen Aufgaben aber zunehmend Fehler. Was ist die wahrscheinlichste Ursache?",
+   o:["Der Kontext wächst mit jedem Schritt, bis wichtige Informationen untergehen (Context Rot)",
+      "Das Modell ermüdet nach vielen Schritten und muss neu gestartet werden",
+      "Der Modellanbieter drosselt die Qualität bei langen Sitzungen",
+      "Lange Aufgaben sind für Sprachmodelle grundsätzlich nicht lösbar"],
+   w:"Mit jedem Werkzeugaufruf wächst der Verlauf. Irgendwann stehen alte Rohdaten neben dem eigentlichen Ziel, und das Modell nutzt die entscheidenden Details schlechter. Gegenmittel sind Context-Engineering-Techniken: Verlauf verdichten, Zwischenstände in Dateien auslagern, Teilaufgaben an Sub-Agenten geben.",
+   k:"„Das Problem ist nicht das Modell, sondern was es in Schritt 40 sieht. Wir müssen den Kontext aktiv steuern.“"},
+  {c:"agent",
+   q:"Was ist mit dem „Harness“ eines KI-Agenten gemeint?",
+   o:["Alles um das Modell herum: Arbeitsschleife, Werkzeuge, Regeln, Zustand, Prüfungen und Protokolle",
+      "Ein Filter, der unerwünschte Antworten des Modells blockiert",
+      "Ein spezielles Trainingsverfahren, mit dem Agenten nachtrainiert werden",
+      "Die Hardware, auf der das Modell betrieben wird"],
+   w:"Agent = Modell + Harness. Das Modell liefert das Schlussfolgern, der Harness macht daraus einen arbeitsfähigen Agenten. Coding-Agenten wie Claude Code sind im Kern ein Harness um ein Sprachmodell. Die Zuverlässigkeit eines Agenten hängt stark vom Harness ab.",
+   k:"„Wenn wir einen Agenten bauen, bauen wir vor allem den Rahmen um das Modell. Dort entstehen Zuverlässigkeit und Kontrolle.“"},
+  {c:"agent",
+   q:"Welcher Baustein ermöglicht es einem Agenten am stärksten, eigene Fehler zu erkennen und zu korrigieren?",
+   o:["Eine objektive Prüfung nach jedem Schritt, etwa automatisierte Tests oder Validierungsregeln",
+      "Ein größeres und teureres Modell",
+      "Eine längere und detailliertere Systemanweisung",
+      "Die Anweisung „Prüfe deine Antwort sorgfältig“ im Prompt"],
+   w:"Ein Agent, der sich nur selbst einschätzt, hält Fehler oft für Erfolge. Erst ein objektives Signal von außen (Test schlägt fehl, Summe stimmt nicht, Format ungültig) gibt ihm eine verlässliche Grundlage zur Korrektur. Deshalb investieren gute Harnesses vor allem in Prüfmechanismen.",
+   k:"„Bevor wir einen Agenten automatisieren, definieren wir, woran er objektiv erkennt, dass sein Ergebnis stimmt.“"},
+  {c:"agent",
+   q:"Ein Agent hat Zugriff auf 80 Werkzeuge und wählt häufig das falsche. Was ist die beste Maßnahme?",
+   o:["Werkzeuge reduzieren, klar voneinander abgrenzen und nur die für die Aufgabe relevanten bereitstellen",
+      "Noch mehr Werkzeuge ergänzen, damit für jeden Fall eines passt",
+      "Die Werkzeugbeschreibungen kürzen, um Platz im Kontext zu sparen",
+      "Auf ein Modell mit größerem Kontextfenster wechseln"],
+   w:"Jede Werkzeugbeschreibung belegt Kontext und ist eine weitere Option zur Auswahl. Überschneidende oder unklar beschriebene Werkzeuge führen zu Fehlgriffen. Besser sind wenige, klar abgegrenzte Werkzeuge mit präzisen Beschreibungen, bei Bedarf dynamisch je Aufgabe geladen.",
+   k:"„Für Agenten gilt dasselbe wie für Menschen: Ein klar sortierter Werkzeugkasten schlägt ein überfülltes Lager.“"},
+  {c:"agent",
+   q:"Ein Anbieter wirbt: „Unser Agent wird mit jedem Durchlauf besser.“ Wie funktioniert das technisch in der Regel?",
+   o:["Der Agent hält Erkenntnisse in Gedächtnisdateien fest, die in künftigen Sitzungen wieder geladen werden",
+      "Das Modell trainiert sich nach jeder Sitzung selbstständig neu",
+      "Der Anbieter verbessert das Modell individuell für jeden Kunden",
+      "Der Agent speichert alle bisherigen Gespräche vollständig im Kontextfenster"],
+   w:"Die Modellgewichte ändern sich bei der Nutzung nicht. Lernen findet im Harness statt: Projektanweisungen, Skills und Gedächtnisspeicher, die der Agent liest und fortschreibt. Das ist nachvollziehbar und korrigierbar, braucht aber Pflege, damit sich keine falschen Regeln festsetzen.",
+   k:"„Fragen wir, wo dieses Gedächtnis liegt, wer es prüfen kann und wie man falsch gelernte Regeln wieder entfernt.“"},
+  {c:"agent",
+   q:"Ein Agent soll 5.000 Lieferantenverträge auf eine bestimmte Haftungsklausel prüfen. Wie geht man mit dem Kontext am besten um?",
+   o:["Verträge gezielt einzeln laden und prüfen, Ergebnisse laufend in eine Datei schreiben, Teilmengen an Sub-Agenten geben",
+      "Alle 5.000 Verträge auf einmal in das Kontextfenster laden",
+      "Nur die ersten 100 Verträge prüfen und das Ergebnis hochrechnen",
+      "Die Verträge vorab von Hand zusammenfassen lassen"],
+   w:"Keine Kontextgröße fasst 5.000 Verträge sinnvoll. Der Agent arbeitet mit Verweisen und lädt Inhalte erst, wenn er sie braucht. Ergebnisse landen außerhalb des Kontexts in einer Datei, Teilmengen können parallel von Sub-Agenten mit frischem Kontext bearbeitet werden.",
+   k:"„Wir lassen den Agenten arbeiten wie ein Prüfteam: Akte für Akte, mit Ergebnisliste, statt alles auf einmal zu lesen.“"},
+  {c:"agent",
+   q:"In einem Konzern bauen zwölf Teams eigene Agenten, jedes mit eigenem Rahmen für Werkzeuge, Rechte und Protokollierung. Was empfiehlst du?",
+   o:["Einen Standard-Harness auf der Plattform mit Rechten, Freigaben, Protokollen und Evals; die Teams gestalten Kontext und Werkzeuge",
+      "Den Teams volle Freiheit lassen, weil Innovation sonst gebremst wird",
+      "Alle Agenten-Projekte stoppen, bis ein zentrales Team alle Agenten selbst baut",
+      "Ein einziges Modell für alle Teams vorschreiben"],
+   w:"Rechte, Freigaben und Nachweise sind keine teamspezifischen Fragen, sondern Konzernanforderungen. Ein Standard-Harness stellt sie einheitlich bereit und spart Doppelarbeit. Die Teams behalten Freiheit dort, wo ihr Fachwissen zählt: bei Kontext, Werkzeugen und Prüfkriterien.",
+   k:"„Kontrolle zentral, Fachlichkeit dezentral: Die Plattform liefert den Rahmen, die Teams liefern das Wissen.“"}
 ];
 
 /* ============================================================
@@ -671,7 +734,7 @@ const QUESTIONS = [
    cats = Quiz-Kategorien, die zur Lektion passen.
    ============================================================ */
 const LESSONS = [
-  {id:"llm", title:"Wie ein Sprachmodell funktioniert", min:5, cats:["konzepte","mythen"],
+  {id:"llm", part:"Grundlagen und Plattform", title:"Wie ein Sprachmodell funktioniert", min:5, cats:["konzepte","mythen"],
    lead:"Wer KI-Plattformen berät, muss kein Modell trainieren können. Er muss aber verstehen, was beim Training und bei der Nutzung passiert, denn daraus folgen fast alle Architekturentscheidungen im Konzern.",
    blocks:[
     {h:"Training und Nutzung sind zwei getrennte Welten"},
@@ -843,7 +906,90 @@ const LESSONS = [
    take:["Hub-and-Spoke: Technik zentral, Verantwortung für den Nutzen im Fachbereich.",
          "Ein klarer Weg von der Idee in die Produktion verhindert endlose Piloten.",
          "Befähigung entsteht über rollenspezifische Anwendungsfälle und Champions, nicht über Lizenzen."],
-   terms:[["Hub-and-Spoke","Zentrales Plattformteam, dezentrale Umsetzung in den Fachbereichen"],["Business Owner","Verantwortliche Person im Fachbereich für den Nutzen eines Use Cases"],["Champions-Netzwerk","Multiplikatoren in den Fachbereichen"],["Use-Case-Pipeline","Standardprozess von der Idee bis zur Produktion"]]}
+   terms:[["Hub-and-Spoke","Zentrales Plattformteam, dezentrale Umsetzung in den Fachbereichen"],["Business Owner","Verantwortliche Person im Fachbereich für den Nutzen eines Use Cases"],["Champions-Netzwerk","Multiplikatoren in den Fachbereichen"],["Use-Case-Pipeline","Standardprozess von der Idee bis zur Produktion"]]},
+
+  {id:"context", part:"Agenten bauen", title:"Context Engineering", min:6, cats:["agent"],
+   lead:"Ein Agent ist bei jedem Schritt nur so gut wie das, was in seinem Kontextfenster steht. Context Engineering ist die Disziplin, genau das zu gestalten: welche Informationen, Werkzeuge und Erinnerungen das Modell in jedem Moment sieht. Es ist die Weiterentwicklung von Prompt Engineering.",
+   blocks:[
+    {h:"Vom Prompt zum Kontext"},
+    {p:"Prompt Engineering optimiert eine einzelne Anweisung. Bei Agenten reicht das nicht. Sie arbeiten über Dutzende oder Hunderte Schritte, rufen Werkzeuge auf, lesen Dateien und sammeln Ergebnisse. Bei jedem Schritt wird neu zusammengestellt, was das Modell sieht. Diese Zusammenstellung ist die eigentliche Ingenieursleistung."},
+    {h:"Was im Kontext eines Agenten steht"},
+    {table:["Bestandteil","Inhalt","Typischer Fehler"], rows:[
+      ["Systemanweisung","Rolle, Ziele, Regeln, Arbeitsweise","Zu vage, oder eine Liste aus hundert Sonderfällen"],
+      ["Werkzeuge","Beschreibungen aller verfügbaren Tools","Zu viele, sich überschneidende Tools; das Modell wählt falsch"],
+      ["Abgerufenes Wissen","Dokumente, Suchergebnisse, Dateiinhalte","Alles vorab laden, statt gezielt nachzuschlagen"],
+      ["Gedächtnis","Notizen und Erkenntnisse aus früheren Schritten oder Sitzungen","Fehlt ganz, oder veraltete Notizen bleiben stehen"],
+      ["Verlauf","Bisherige Nachrichten, Tool-Aufrufe und Ergebnisse","Wächst unkontrolliert, bis das Wichtige untergeht"]]},
+    {h:"Kontext ist ein knappes Budget"},
+    {p:"Moderne Modelle haben sehr große Kontextfenster. Trotzdem sinkt mit wachsender Länge die Fähigkeit, Details zuverlässig zu nutzen. Man spricht von Context Rot. Gutes Context Engineering sucht deshalb die kleinste Menge an Informationen mit der höchsten Aussagekraft, statt das Fenster zu füllen."},
+    {h:"Vier Techniken"},
+    {table:["Technik","Was passiert"], rows:[
+      ["Auslagern","Der Agent schreibt Pläne, Zwischenergebnisse und Erkenntnisse in Dateien außerhalb des Kontexts und liest sie bei Bedarf wieder ein."],
+      ["Gezielt laden","Statt alles vorab mitzugeben, hält der Agent nur Verweise wie Dateipfade oder Suchbegriffe und lädt Inhalte erst, wenn er sie braucht (Just-in-Time)."],
+      ["Verdichten","Wird der Verlauf zu lang, fasst das System ihn zusammen und arbeitet mit der Zusammenfassung weiter (Compaction). Entscheidungen und offene Punkte bleiben, Rohdaten fallen weg."],
+      ["Isolieren","Teilaufgaben gehen an Sub-Agenten mit eigenem, frischem Kontext. Sie liefern nur ein kompaktes Ergebnis an den Haupt-Agenten zurück."]]},
+    {callout:"Für das Kundengespräch", text:"Wenn ein Agent im Pilot gut funktioniert und bei langen Aufgaben nachlässt, liegt es selten am Modell. Meist ist der Kontext überladen oder das Wichtige fehlt. Die entscheidende Frage lautet: Was sieht der Agent in Schritt 40?"}
+   ],
+   take:["Context Engineering gestaltet, was das Modell bei jedem Schritt sieht: Anweisungen, Werkzeuge, Wissen, Gedächtnis und Verlauf.",
+         "Kontext ist ein knappes Budget. Mehr Text macht Agenten nicht automatisch besser, oft schlechter.",
+         "Die vier Techniken: auslagern, gezielt laden, verdichten, isolieren."],
+   terms:[["Context Engineering","Gestaltung aller Informationen, die ein Modell bei jedem Schritt erhält"],["Context Rot","Nachlassende Qualität bei sehr langem Kontext"],["Compaction","Zusammenfassen des Verlaufs, um Platz im Kontext zu schaffen"],["Just-in-Time-Laden","Inhalte erst laden, wenn sie gebraucht werden"],["Sub-Agent","Hilfsagent mit eigenem Kontext für eine Teilaufgabe"]]},
+
+  {id:"harness", title:"Harness Engineering", min:7, cats:["agent"],
+   lead:"Ein Agent besteht aus zwei Teilen: dem Modell und dem Harness, also allem, was um das Modell herum gebaut ist. Dasselbe Modell kann in einem schwachen Harness scheitern und in einem guten Harness über Stunden zuverlässig arbeiten. Harness Engineering ist die Disziplin, diesen Rahmen zu bauen.",
+   blocks:[
+    {h:"Agent = Modell + Harness"},
+    {p:"Das Modell liefert Sprachverständnis und Schlussfolgern. Der Harness liefert alles andere: die Arbeitsschleife, die Werkzeuge, die Regeln, das Gedächtnis, die Prüfungen und die Protokolle. Coding-Agenten wie Claude Code oder Codex sind im Kern solche Harnesses um ein Sprachmodell. Wer im Unternehmen eigene Agenten baut, baut vor allem einen Harness."},
+    {h:"Die Arbeitsschleife"},
+    {flow:[
+      ["Planen","Der Agent zerlegt die Aufgabe in Schritte und hält den Plan schriftlich fest, etwa als Aufgabenliste."],
+      ["Handeln","Er führt einen Schritt aus: Datei lesen, Code ändern, System abfragen, Dokument erstellen."],
+      ["Prüfen","Er kontrolliert das Ergebnis gegen ein objektives Kriterium: Tests laufen durch, Zahlen stimmen, das Format ist gültig. Ohne diesen Schritt hält der Agent Fehler für Erfolge."],
+      ["Korrigieren","Schlägt die Prüfung fehl, analysiert er die Ursache, passt den Ansatz an und versucht es erneut, oder er übergibt an einen Menschen."]]},
+    {p:"Die Schleife läuft, bis die Aufgabe erledigt ist oder eine Grenze erreicht wird: Zeit, Kosten oder Anzahl der Versuche."},
+    {h:"Die fünf Bausteine eines Harness"},
+    {table:["Baustein","Aufgabe","Beispiel"], rows:[
+      ["Kontext","Stellt zusammen, was das Modell in jedem Schritt sieht","Systemanweisung, Projektdateien, Notizen"],
+      ["Werkzeuge","Geben dem Agenten Hände","Dateizugriff, Kommandozeile, Suche, MCP-Server"],
+      ["Zustand","Hält den Fortschritt über Schritte und Sitzungen fest","Aufgabenliste, Fortschrittsdatei, Git-Historie"],
+      ["Regeln","Legen fest, was erlaubt ist und was eine Freigabe braucht","Berechtigungen, gesperrte Befehle, Budgetgrenzen"],
+      ["Nachweise","Belegen, was der Agent getan hat und warum","Protokolle, Testergebnisse, Änderungsdiffs, Traces"]]},
+    {h:"Warum lange Aufgaben scheitern"},
+    {p:"Agenten, die stundenlang arbeiten, zeigen typische Fehlerbilder: Sie versuchen zu viel auf einmal, erklären eine Aufgabe zu früh für erledigt oder verlieren nach dem Verdichten des Kontexts den Faden. Diese Gegenmittel im Harness haben sich bewährt:"},
+    {ul:["Kleine Schritte: immer nur eine Teilaufgabe, danach prüfen und den Zwischenstand speichern",
+         "Objektive Fertig-Kriterien: eine Liste von Anforderungen, die einzeln geprüft und abgehakt werden",
+         "Übergabe-Notizen: eine Fortschrittsdatei, mit der eine neue Sitzung sofort weiterarbeiten kann",
+         "Sauberer Zustand: Jede Sitzung hinterlässt ein funktionierendes, nachvollziehbares Ergebnis"]},
+    {callout:"Für das Kundengespräch", text:"Im Konzern ist der Harness der Ort, an dem Kontrolle stattfindet: Rechte, Freigaben, Protokolle, Qualitätsprüfungen. Die Plattform sollte einen Standard-Harness bereitstellen, statt dass jedes Team seinen eigenen Agenten-Rahmen baut."}
+   ],
+   take:["Agent = Modell + Harness. Die Zuverlässigkeit eines Agenten entsteht überwiegend im Harness.",
+         "Der Kern ist die Schleife Planen, Handeln, Prüfen, Korrigieren. Ohne objektive Prüfung gibt es keine Selbstkorrektur.",
+         "Im Konzern regelt der Harness Rechte, Freigaben und Nachweise und gehört deshalb auf die Plattform."],
+   terms:[["Harness","Alles um das Modell herum, was es zum Agenten macht"],["Agentenschleife","Wiederholter Ablauf aus Planen, Handeln, Prüfen, Korrigieren"],["Verifikation","Objektive Prüfung eines Ergebnisses, etwa durch Tests"],["Fortschrittsdatei","Notiz, mit der eine neue Sitzung nahtlos weiterarbeitet"],["Policy","Regeln, was ein Agent tun darf"]]},
+
+  {id:"memory", title:"Gedächtnis und Lernen über Sitzungen", min:5, cats:["agent"],
+   lead:"Ein Sprachmodell vergisst nach jeder Sitzung alles. Dass Agenten trotzdem aus Fehlern lernen und mit jedem Durchlauf besser werden, liegt an Gedächtnisstrukturen im Harness. Das ist derzeit eines der aktivsten Entwicklungsfelder.",
+   blocks:[
+    {h:"Das Modell lernt nicht, der Agent schon"},
+    {p:"Die Gewichte des Modells ändern sich bei der Nutzung nicht. Lernen findet deshalb außerhalb des Modells statt: in Dateien, die der Agent liest und selbst fortschreibt. Was dort steht, fließt in der nächsten Sitzung wieder in den Kontext ein. Der Vorteil: Dieses Gedächtnis ist lesbar, prüfbar und korrigierbar."},
+    {h:"Drei Formen von Gedächtnis"},
+    {table:["Form","Was drinsteht","Wer es pflegt"], rows:[
+      ["Projektanweisungen","Dauerhafte Regeln zu einem Projekt, etwa in einer CLAUDE.md oder AGENTS.md: Aufbau, Konventionen, Befehle, Fallstricke","Menschen und Agent gemeinsam; wird zu Beginn jeder Sitzung geladen"],
+      ["Skills","Gepackte Anleitungen für wiederkehrende Aufgaben, etwa „Präsentation im Firmendesign erstellen“, mit Beispielen und Skripten","Meist Menschen; der Agent sieht nur eine Kurzbeschreibung und lädt den Inhalt erst bei Bedarf"],
+      ["Gedächtnisspeicher","Erkenntnisse, die der Agent selbst festhält: was funktioniert hat, was nicht, welche Vorlieben der Nutzer hat","Der Agent selbst, über eigene Werkzeuge zum Lesen und Schreiben"]]},
+    {h:"Wie ein Agent aus Fehlern lernt"},
+    {flow:[
+      ["Fehler erkennen","Eine Prüfung schlägt fehl, oder ein Mensch korrigiert das Ergebnis."],
+      ["Erkenntnis festhalten","Der Agent schreibt die Lehre als Regel in sein Gedächtnis, zum Beispiel: „Bei Kunde X immer Nettowerte ausweisen.“"],
+      ["Beim nächsten Mal nutzen","Die Regel wird in künftigen Sitzungen geladen, und der Fehler tritt nicht wieder auf."]]},
+    {h:"Der nächste Schritt: Gedächtnis aufräumen"},
+    {p:"Gedächtnis wächst und veraltet. Neuere Ansätze lassen Agenten ihre Erinnerungen außerhalb der eigentlichen Arbeit konsolidieren: Doppeltes zusammenführen, Widersprüche auflösen, Veraltetes löschen. Das wird teils als „Träumen“ bezeichnet. Ohne solche Pflege wird Gedächtnis zur Fehlerquelle, weil alte Regeln neue Situationen verzerren."},
+    {callout:"Für das Kundengespräch", text:"Agenten-Gedächtnis ist Unternehmenswissen in Textform. Es braucht dieselbe Governance wie andere Wissensbestände: Wer darf es ändern, wer prüft es, wie wird es versioniert? Ein Agent, der eine falsche Regel lernt, wiederholt den Fehler zuverlässig."}
+   ],
+   take:["Modelle lernen bei der Nutzung nicht. Agenten lernen über Dateien, die sie lesen und fortschreiben.",
+         "Projektanweisungen, Skills und Gedächtnisspeicher sind die drei Formen von Agenten-Gedächtnis.",
+         "Gedächtnis muss gepflegt und kontrolliert werden, sonst lernt der Agent die falschen Lektionen."],
+   terms:[["CLAUDE.md / AGENTS.md","Projektdatei mit dauerhaften Anweisungen für Agenten"],["Skill","Gepackte Anleitung für eine wiederkehrende Aufgabe"],["Progressive Disclosure","Erst Kurzbeschreibung, voller Inhalt nur bei Bedarf"],["Konsolidierung","Aufräumen und Zusammenführen von Erinnerungen zwischen Sitzungen"]]}
 ];
 
 /* ============================================================ */
@@ -914,6 +1060,7 @@ function renderLessons(){
   const read = readSet();
   $("lessons").innerHTML = "";
   LESSONS.forEach((l, i) => {
+    if(l.part) $("lessons").appendChild(el("h3", "part", l.part));
     const b = el("button", "lcard" + (read.has(l.id) ? " done" : ""));
     b.id = "lesson-" + l.id;
     b.append(el("span", "lnum", read.has(l.id) ? "✓" : String(i+1).padStart(2,"0")), el("strong", "", l.title),
