@@ -183,11 +183,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="hero">
       <span class="label">Selbstlernmodul · Management Consulting</span>
       <h1>KI-Kompass für <span>Berater</span></h1>
-      <p class="lede">Wie Konzerne Sprachmodelle technisch einsetzen und wie man Agenten baut, die zuverlässig arbeiten. Elf Lektionen zum Durchlesen, danach testest du dein Wissen im Quiz.</p>
+      <p class="lede">Wie Konzerne Sprachmodelle technisch einsetzen wie man Agenten baut, die zuverlässig arbeiten, und wie du selbst mit Claude Code arbeitest. 15 Lektionen zum Durchlesen, danach testest du dein Wissen im Quiz.</p>
     </div>
     <div class="row"><h2>Lektionen</h2><span class="label" id="readInfo"></span></div>
     <div class="lessons" id="lessons"></div>
-    <p class="foot">Stand: Oktober 2026. Produktnamen sind Beispiele, keine Empfehlungen. Regulatorische Aussagen vereinfacht, keine Rechtsberatung.</p>
+    <p class="foot">Stand: November 2026. Produktnamen sind Beispiele, keine Empfehlungen. Regulatorische Aussagen vereinfacht, keine Rechtsberatung.</p>
   </section>
 
   <!-- LERNEN: Lektion -->
@@ -262,7 +262,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
    Reihenfolge wird beim Anzeigen gemischt), w = Erklärung,
    k = Formulierung fürs Kundengespräch
    ============================================================ */
-const TRACKS = {basis:"Grundlagen", plattform:"KI-Plattform im Konzern", agenten:"Agenten bauen"};
+const TRACKS = {basis:"Grundlagen", plattform:"KI-Plattform im Konzern", agenten:"Agenten bauen", werkzeug:"Werkzeugkasten"};
 const CATS = {
   konzepte:     {t:"basis", name:"Konzepte",             desc:"LLM, Halluzination, RAG, Agenten"},
   anwendung:    {t:"basis", name:"Anwendung",            desc:"Use Cases, Build vs. Buy, Business Case"},
@@ -272,7 +272,8 @@ const CATS = {
   architektur:  {t:"plattform", name:"Architektur",      desc:"Gateway, Vektorsuche, MCP, Multi-Modell"},
   betrieb:      {t:"plattform", name:"Betrieb & Sicherheit", desc:"Evaluation, Kosten, Prompt Injection, Datenresidenz"},
   orgmodell:    {t:"plattform", name:"Operating Model",  desc:"Plattformteam, Use-Case-Pipeline, Befähigung"},
-  agent:        {t:"agenten", name:"Context & Harness Engineering", desc:"Kontext, Agentenschleife, Gedächtnis"}
+  agent:        {t:"agenten", name:"Context & Harness Engineering", desc:"Kontext, Agentenschleife, Gedächtnis"},
+  werkzeug:     {t:"werkzeug", name:"Claude Code & Werkzeuge", desc:"Prompts, Skills, Hooks, Routinen, MCP"}
 };
 
 /* Ebenen der Referenzarchitektur (Lernmodul) */
@@ -714,7 +715,73 @@ const QUESTIONS = [
       "Ein zentrales Team baut künftig alle Agenten, die Fachbereiche liefern nur Anforderungen",
       "Jedem Team ein eigenes Modell zuweisen, damit sich die Agenten nicht gegenseitig beeinflussen"],
    w:"Rechte, Freigaben und Nachweise sind keine teamspezifischen Fragen, sondern Konzernanforderungen. Ein Standard-Harness stellt sie einheitlich bereit und spart Doppelarbeit. Die Teams behalten Freiheit dort, wo ihr Fachwissen zählt: bei Kontext, Werkzeugen und Prüfkriterien.",
-   k:"„Kontrolle zentral, Fachlichkeit dezentral: Die Plattform liefert den Rahmen, die Teams liefern das Wissen.“"}
+   k:"„Kontrolle zentral, Fachlichkeit dezentral: Die Plattform liefert den Rahmen, die Teams liefern das Wissen.“"},
+
+  // --- WERKZEUGKASTEN: CLAUDE CODE ---
+  {c:"werkzeug",
+   q:"Ein Kollege bekommt von Claude immer zu allgemeine Folienentwürfe. Was verbessert die Ergebnisse am meisten?",
+   o:["Ein Briefing mit Ziel, Zielgruppe, Material und einem Beispiel",
+      "Ein stärkeres Modell wählen, weil kleinere Modelle grundsätzlich oberflächlicher formulieren",
+      "Den Prompt mit „Du bist ein Weltklasse-Berater“ einleiten und so mehr Qualität einfordern",
+      "Den Entwurf mehrfach neu erzeugen lassen und die beste Variante aus allen Durchläufen wählen"],
+   w:"Allgemeine Ergebnisse entstehen meist aus allgemeinen Aufträgen. Das Modell kennt Zielgruppe, Projektstand und Qualitätsanspruch nicht, solange niemand sie nennt. Ein konkretes Beispiel für das gewünschte Ergebnis wirkt dabei oft stärker als jede Beschreibung.",
+   k:"„Behandeln Sie den Prompt wie ein Briefing an einen neuen Kollegen. Was Sie ihm nicht sagen, kann er nicht wissen.“"},
+  {c:"werkzeug",
+   q:"Wann gehört eine Regel in einen Hook statt in die CLAUDE.md?",
+   o:["Wenn sie ausnahmslos gelten muss, etwa nie Kundendateien zu löschen",
+      "Wenn sie besonders lang ist und in der CLAUDE.md zu viel Kontext belegen würde",
+      "Wenn sie nur für einzelne Teammitglieder gilt und nicht für das ganze Projekt",
+      "Wenn sie nur selten gebraucht wird und deshalb erst bei Bedarf geladen werden soll"],
+   w:"Anweisungen in der CLAUDE.md befolgt das Modell meistens, aber nicht garantiert. Ein Hook ist ein Befehl, der bei einem festen Ereignis immer ausgeführt wird und Aktionen blockieren kann. Selten gebrauchtes Wissen gehört dagegen in einen Skill.",
+   k:"„Was nie passieren darf, regeln wir technisch über einen Hook. Eine Anweisung im Prompt ist nur eine Bitte.“"},
+  {c:"werkzeug",
+   q:"Ein Team hat 40 Skills angelegt und befürchtet, dass Claude dadurch mit Informationen überladen wird. Wie ordnest du das ein?",
+   o:["Unbegründet: Claude sieht nur Kurzbeschreibungen und lädt Inhalte bei Bedarf",
+      "Berechtigt: Alle Skills werden bei jedem Start vollständig geladen und müssen deshalb sehr kurz sein",
+      "Berechtigt: Ab etwa zehn Skills sollte man auf ein Modell mit größerem Kontextfenster wechseln",
+      "Unbegründet, weil Skills gar nicht im Kontext landen, sondern auf einem Server des Anbieters laufen"],
+   w:"Skills nutzen Progressive Disclosure. Im Kontext steht zunächst nur die Kurzbeschreibung jedes Skills. Den vollständigen Inhalt lädt Claude erst, wenn eine Aufgabe dazu passt, und Skripte im Skill werden ausgeführt statt gelesen. Wichtig ist deshalb vor allem eine treffende Kurzbeschreibung.",
+   k:"„Viele Skills sind kein Problem. Entscheidend ist, dass jede Kurzbeschreibung klar sagt, wofür der Skill da ist.“"},
+  {c:"werkzeug",
+   q:"Ein Kunde will Claude Code erstmals auf einen sensiblen Projektordner loslassen und vorher sehen, was der Agent vorhat. Was empfiehlst du?",
+   o:["Den Plan-Modus: Claude erkundet nur und legt einen Plan zur Freigabe vor",
+      "Den Modus ohne Prüfung wählen und alle Änderungen danach gemeinsam im Detail durchsehen",
+      "Dem Agenten im Prompt sagen, er solle bitte vorsichtig sein und nichts Wichtiges verändern",
+      "Den Modus „Änderungen annehmen“ wählen, damit jede Dateiänderung automatisch protokolliert wird"],
+   w:"Im Plan-Modus liest Claude Code nur und schlägt einen Plan vor. Geändert wird erst, wenn ein Mensch den Plan freigibt. Der Modus ohne Prüfung ist nur für abgeschottete Umgebungen gedacht, und eine Bitte im Prompt ist keine Kontrolle.",
+   k:"„Erst planen lassen, dann freigeben. So sehen Sie vor jeder Änderung, was der Agent vorhat.“"},
+  {c:"werkzeug",
+   q:"Eine Vorstandsvorlage soll aus kritischer Sicht geprüft werden, ohne den laufenden Arbeitskontext zu überladen. Welcher Baustein passt?",
+   o:["Ein Subagent mit eigener Rolle und eigenem Kontext, der nur sein Urteil zurückgibt",
+      "Ein Hook, der nach jeder Änderung automatisch eine kritische Stellungnahme zur Vorlage erzeugt",
+      "Eine zusätzliche Regel in der CLAUDE.md, dass Claude seine Vorlagen immer selbst kritisch prüft",
+      "Ein MCP-Server, der die Vorlage zur Bewertung an ein externes Review-System weitergibt"],
+   w:"Ein Subagent startet mit frischem Kontext, liest die Vorlage aus seiner Rolle heraus und liefert nur eine kompakte Bewertung zurück. Der Hauptkontext bleibt schlank. Eine Selbstprüfung derselben Sitzung ist deutlich weniger kritisch als eine unabhängige Perspektive.",
+   k:"„Für den kritischen Blick setzen wir einen eigenen Prüfer mit eigener Rolle ein, nicht denselben Agenten, der die Vorlage geschrieben hat.“"},
+  {c:"werkzeug",
+   q:"Jeden Morgen soll ein „What's new“ aus den neuen Meeting-Notizen entstehen, auch wenn niemand den Rechner eingeschaltet hat. Was ist die passende Lösung?",
+   o:["Eine Routine in der Cloud, die nach Zeitplan startet",
+      "Ein Hook beim Sitzungsstart, der die Zusammenfassung erzeugt, sobald jemand Claude öffnet",
+      "Ein Skill „What's new“, den jedes Teammitglied morgens als Erstes manuell aufruft",
+      "Ein Subagent, der dauerhaft im Hintergrund läuft und neue Meeting-Notizen überwacht"],
+   w:"Routinen sind gespeicherte Aufträge, die nach Zeitplan oder bei Ereignissen starten. Cloud-Routinen laufen auf der Infrastruktur von Anthropic und damit auch bei ausgeschaltetem Rechner. Ein Hook beim Sitzungsstart braucht dagegen jemanden, der eine Sitzung öffnet.",
+   k:"„Wiederkehrende Arbeit sollte nicht davon abhängen, dass jemand daran denkt. Dafür gibt es Routinen.“"},
+  {c:"werkzeug",
+   q:"Ein Agent liest über MCP Tickets aus Jira und darf dort auch Tickets ändern. Was ist das größte Risiko?",
+   o:["Tickets mit versteckten Anweisungen, die den Agenten zu Aktionen verleiten",
+      "Die Antwortzeit steigt, weil jede Anfrage erst über den MCP-Server laufen muss",
+      "MCP-Server speichern alle Inhalte dauerhaft beim Modellanbieter und machen sie zugänglich",
+      "Das Modell verlernt durch die vielen Ticketdaten seine allgemeinen Fähigkeiten"],
+   w:"Jeder Inhalt, den ein Agent liest, kann Anweisungen enthalten, die er fälschlich befolgt. Kann der Agent zusätzlich schreiben, wird daraus ein Handlungsrisiko. Gegenmittel sind minimale Rechte, getrennte Freigaben für Lesen und Schreiben und Bestätigungen für kritische Aktionen.",
+   k:"„Bei jeder Anbindung fragen wir: Was darf der Agent lesen, was darf er ändern, und was braucht eine Bestätigung?“"},
+  {c:"werkzeug",
+   q:"Ein Versicherer will einen eigenen Agenten für die Schadenbearbeitung. Der IT-Leiter sagt: „Dafür müssen wir erst ein eigenes Modell trainieren.“ Was stimmt?",
+   o:["Nein: Mit dem Agent SDK nutzt man die Arbeitsschleife von Claude Code als Baukasten",
+      "Ja: Ohne ein auf Versicherungsdaten trainiertes Modell ist ein Agent nicht zuverlässig einsetzbar",
+      "Nein: Es reicht, allen Mitarbeitenden Claude Code zu geben; eine eigene Anwendung ist nie nötig",
+      "Ja: Fertige Agenten-Bausteine dürfen nach dem EU AI Act nicht in Versicherungsprozessen laufen"],
+   w:"Das Claude Agent SDK stellt dieselbe Arbeitsschleife und dieselben Werkzeuge bereit wie Claude Code, als Bibliothek für eigene Anwendungen. Die Arbeit liegt im Harness für den Anwendungsfall: Anbindung der Schadensysteme, Regeln, Prüfungen und Nachweise. Ein eigenes Modell ist dafür nicht nötig.",
+   k:"„Das Modell kaufen wir ein. Bauen müssen wir den Rahmen: Anbindung, Regeln, Prüfungen und Nachweise für Ihren Prozess.“"}
 ];
 
 /* ============================================================
@@ -980,7 +1047,111 @@ const LESSONS = [
    take:["Modelle lernen bei der Nutzung nicht. Agenten lernen über Dateien, die sie lesen und fortschreiben.",
          "Projektanweisungen, Skills und Gedächtnisspeicher sind die drei Formen von Agenten-Gedächtnis.",
          "Gedächtnis muss gepflegt und kontrolliert werden, sonst lernt der Agent die falschen Lektionen."],
-   terms:[["CLAUDE.md / AGENTS.md","Projektdatei mit dauerhaften Anweisungen für Agenten"],["Skill","Gepackte Anleitung für eine wiederkehrende Aufgabe"],["Progressive Disclosure","Erst Kurzbeschreibung, voller Inhalt nur bei Bedarf"],["Konsolidierung","Aufräumen und Zusammenführen von Erinnerungen zwischen Sitzungen"]]}
+   terms:[["CLAUDE.md / AGENTS.md","Projektdatei mit dauerhaften Anweisungen für Agenten"],["Skill","Gepackte Anleitung für eine wiederkehrende Aufgabe"],["Progressive Disclosure","Erst Kurzbeschreibung, voller Inhalt nur bei Bedarf"],["Konsolidierung","Aufräumen und Zusammenführen von Erinnerungen zwischen Sitzungen"]]},
+
+  {id:"prompts", part:"Werkzeugkasten: Claude Code", title:"Gute Prompts schreiben", min:5, cats:["werkzeug"],
+   lead:"Ein Prompt ist die Arbeitsanweisung an das Modell. Ein guter Prompt sieht aus wie ein gutes Briefing an einen neuen Kollegen: Ziel, Hintergrund, Erwartung an das Ergebnis. Das ist die Grundlage für alles Weitere im Werkzeugkasten.",
+   blocks:[
+    {h:"Ein Prompt ist ein Briefing"},
+    {p:"Modelle sind sehr fähig, aber sie kennen deinen Kontext nicht. Schlechte Ergebnisse liegen selten an einem fehlenden Zauberwort. Meist fehlt das Briefing: Wofür ist das Ergebnis, wer liest es, was ist schon bekannt, woran erkennt man ein gutes Ergebnis?"},
+    {h:"Die fünf Bausteine"},
+    {table:["Baustein","Frage","Beispiel"], rows:[
+      ["Ziel","Was soll am Ende vorliegen?","Eine Entscheidungsvorlage für den Vorstand, eine Seite"],
+      ["Kontext","Was muss das Modell wissen?","Projektstand, Zielgruppe, bisherige Entscheidungen"],
+      ["Material","Womit soll es arbeiten?","Transkript, Excel-Datei, frühere Folien"],
+      ["Format","Wie soll das Ergebnis aussehen?","Kernaussage zuerst, drei Stichpunkte, Tabelle mit Risiken"],
+      ["Kriterien","Woran misst du die Qualität?","Jede Zahl mit Quelle, keine Annahmen als Fakten"]]},
+    {h:"Drei Techniken, die fast immer helfen"},
+    {ul:["Beispiele zeigen: Ein gutes Beispiel für das gewünschte Ergebnis wirkt stärker als eine lange Beschreibung.",
+         "Material klar abgrenzen: Dokumente in Markierungen wie <transkript> … </transkript> setzen, damit das Modell Anweisung und Material nicht verwechselt.",
+         "Begründen statt nur anweisen: „Keine Fachbegriffe, weil der Vorstand nicht aus der IT kommt“ hilft mehr als „Keine Fachbegriffe“."]},
+    {h:"Vom Prompt zur wiederverwendbaren Anweisung"},
+    {p:"Wer denselben Prompt zum dritten Mal schreibt, sollte ihn speichern. Dauerhafte Regeln wandern in die CLAUDE.md, wiederkehrende Abläufe werden zu Skills. So wird aus einem guten Prompt ein Baustein des Harness. Diesen Weg beschreiben die nächsten Lektionen."},
+    {callout:"Für das Kundengespräch", text:"Prompt-Schulungen allein bringen wenig. Wirksamer ist es, die besten Prompts eines Teams als gemeinsame Vorlagen und Skills bereitzustellen, damit nicht jeder sie neu erfinden muss."}
+   ],
+   take:["Ein guter Prompt ist ein gutes Briefing: Ziel, Kontext, Material, Format, Kriterien.",
+         "Beispiele, klar abgegrenztes Material und Begründungen verbessern Ergebnisse am stärksten.",
+         "Wiederkehrende Prompts gehören gespeichert: Regeln in die CLAUDE.md, Abläufe in Skills."],
+   terms:[["Prompt","Arbeitsanweisung an das Modell"],["Systemanweisung","Feste Anweisung, die jeder Anfrage vorangestellt wird"],["Few-Shot","Beispiele für das gewünschte Ergebnis direkt im Prompt"],["Markierungen","Tags wie <dokument>, die Material von Anweisungen trennen"]]},
+
+  {id:"claudecode", title:"Wie Claude Code arbeitet", min:6, cats:["werkzeug"],
+   lead:"Claude Code ist der Agent von Anthropic, der dort arbeitet, wo deine Dateien liegen. Er liest und ändert Dateien, führt Befehle aus und nutzt angebundene Systeme. Gebaut wurde er für Softwareentwicklung, er eignet sich aber genauso für Analysen, Dokumente und Präsentationen.",
+   blocks:[
+    {h:"Vom Chat zum Agenten"},
+    {p:"Im Chat kopierst du Material hinein und das Ergebnis wieder heraus. Claude Code sucht die relevanten Unterlagen selbst, erstellt etwa eine Excel-Auswertung, baut daraus Folien und prüft das Ergebnis. Technisch ist Claude Code ein Harness um das Sprachmodell, so wie in Lektion 10 beschrieben."},
+    {h:"Wo Claude Code läuft"},
+    {table:["Oberfläche","Typische Nutzung"], rows:[
+      ["Terminal","Der ursprüngliche Weg, volle Kontrolle über alle Einstellungen"],
+      ["Desktop-App","Auf dem eigenen Rechner, mit Zugriff auf lokale Ordner"],
+      ["Web und Mobile-App","Sitzungen in der Cloud, auch unterwegs startbar"],
+      ["Entwicklungsumgebung","Eingebunden in VS Code und andere IDEs"]]},
+    {h:"Wer entscheidet, was der Agent darf"},
+    {p:"Über Berechtigungsmodi legst du fest, wie selbstständig Claude Code arbeitet. Das ist die Regel-Ebene des Harness."},
+    {table:["Modus","Was passiert"], rows:[
+      ["Standard","Claude liest frei und fragt vor jeder Änderung und jedem Befehl"],
+      ["Änderungen annehmen","Dateiänderungen laufen ohne Rückfrage, andere Befehle nicht"],
+      ["Planen","Claude erkundet nur und legt einen Plan vor; geändert wird erst nach Freigabe"],
+      ["Automatisch","Claude arbeitet durch, ein Sicherheitsmechanismus prüft im Hintergrund; verfügbar je nach Setup"],
+      ["Ohne Prüfung","Alles läuft ohne Rückfrage; nur für abgeschottete Umgebungen gedacht"]]},
+    {h:"Das Gedächtnis: CLAUDE.md und Auto Memory"},
+    {p:"Beim Start lädt Claude Code die CLAUDE.md-Dateien: eine persönliche für alle Projekte und eine pro Projekt, die mit dem Team geteilt wird. Dort stehen Regeln, Aufbau und Arbeitsweise. Zusätzlich führt Claude ein eigenes Gedächtnis (Auto Memory) mit Notizen zu Korrekturen und Vorlieben, das in späteren Sitzungen wieder geladen wird."},
+    {callout:"Für das Kundengespräch", text:"Beim Einsatz im Unternehmen ist die entscheidende Frage nicht, ob der Agent gut genug ist. Sie lautet: Welche Ordner und Systeme darf er sehen, in welchem Modus arbeitet er, und wer legt die Projektregeln fest?"}
+   ],
+   take:["Claude Code ist ein Agent, der dort arbeitet, wo die Dateien liegen, nicht nur ein Chat.",
+         "Berechtigungsmodi steuern, wie selbstständig er handelt. Das ist die Regel-Ebene des Harness.",
+         "CLAUDE.md und Auto Memory sind sein Gedächtnis über Sitzungen hinweg."],
+   terms:[["Claude Code","Agent von Anthropic für Arbeit an Dateien, Befehlen und Systemen"],["Berechtigungsmodus","Einstellung, wie selbstständig der Agent handeln darf"],["Plan-Modus","Agent erkundet und plant, ändert aber nichts ohne Freigabe"],["Auto Memory","Notizen, die Claude selbst über Sitzungen hinweg führt"]]},
+
+  {id:"skills", title:"Skills, Subagenten, Hooks und Routinen", min:6, cats:["werkzeug"],
+   lead:"Mit vier Bausteinen wird aus Claude Code ein Werkzeug, das ein Team gemeinsam nutzt: Skills für wiederkehrendes Know-how, Subagenten für Teilaufgaben, Hooks für Regeln, die immer gelten, und Routinen für Arbeit nach Zeitplan.",
+   blocks:[
+    {h:"Vier Bausteine im Überblick"},
+    {table:["Baustein","Was er ist","Wann einsetzen","Beispiel"], rows:[
+      ["Skill","Ordner mit Anleitung (SKILL.md), dazu Vorlagen oder Skripte","Wiederkehrende Aufgabe mit festem Vorgehen","Meeting-Nachbereitung: Transkript, Action Items, Statusmail-Entwurf"],
+      ["Subagent","Spezialisierter Helfer mit eigener Rolle und eigenem Kontext","Teilaufgabe, die viel liest, aber wenig zurückgibt","Red-Team-Prüfer für eine Vorstandsvorlage"],
+      ["Hook","Befehl, der bei einem festen Ereignis automatisch läuft","Regel, die ausnahmslos gelten muss","Nach jeder Änderung an einer Unterlage läuft eine Quellenprüfung"],
+      ["Routine","Gespeicherter Auftrag, der nach Zeitplan oder Ereignis startet","Wiederkehrende Arbeit ohne manuellen Anstoß","Jeden Morgen ein „What's new“ aus neuen Meeting-Notizen"]]},
+    {h:"Skills: Know-how auf Abruf"},
+    {p:"Ein Skill besteht aus einer SKILL.md mit Name und Kurzbeschreibung, gefolgt von der eigentlichen Anleitung. Claude sieht zunächst nur die Kurzbeschreibung und lädt den vollen Inhalt erst, wenn die Aufgabe passt (Progressive Disclosure). Deshalb kann ein Team viele Skills bereitstellen, ohne den Kontext zu überladen. Skripte im Skill werden ausgeführt statt gelesen. So lassen sich auch Berechnungen oder Formatierungen zuverlässig automatisieren."},
+    {h:"Anweisung oder Hook?"},
+    {p:"Eine Regel in der CLAUDE.md ist eine Bitte: Das Modell befolgt sie meistens, aber nicht garantiert. Ein Hook ist eine Garantie. Er läuft bei jedem passenden Ereignis, etwa vor jedem Befehl oder wenn Claude mit einer Antwort fertig ist, und kann Aktionen auch blockieren. Faustregel: Was nie passieren darf, gehört in einen Hook."},
+    {h:"Routinen: Arbeit nach Zeitplan"},
+    {p:"Eine Routine ist ein gespeicherter Auftrag, der nach Zeitplan, per Schnittstelle oder bei Ereignissen wie einer Änderung im Code-Repository startet. Cloud-Routinen laufen auch, wenn der eigene Rechner aus ist. Lokale geplante Aufgaben laufen auf dem Rechner und können dafür auf lokale Dateien zugreifen."},
+    {h:"Plugins: alles als ein Paket"},
+    {p:"Skills, Subagenten, Hooks und MCP-Anbindungen lassen sich zu einem Plugin bündeln und über einen Katalog im Team verteilen. Für ein generisches Setup wie ein Agentic CST ist das der naheliegende Weg: einmal bauen, in jedem Engagement installieren."},
+    {callout:"Für das Kundengespräch", text:"Wenn ein Kunde fragt, wie man KI-Arbeitsweisen standardisiert: über gemeinsam gepflegte Skills und Plugins, nicht über Richtlinien-Dokumente. Dann steckt der Standard im Werkzeug und nicht in einem PDF."}
+   ],
+   take:["Skills liefern Know-how auf Abruf, Subagenten übernehmen Teilaufgaben mit eigenem Kontext.",
+         "Anweisungen werden meistens befolgt, Hooks immer. Was nie passieren darf, gehört in einen Hook.",
+         "Routinen erledigen Arbeit nach Zeitplan; Plugins bündeln alles zu einem verteilbaren Paket."],
+   terms:[["SKILL.md","Anleitungsdatei eines Skills mit Name und Kurzbeschreibung"],["Progressive Disclosure","Erst die Kurzbeschreibung, der volle Inhalt nur bei Bedarf"],["Subagent","Helfer mit eigener Rolle und eigenem Kontext"],["Hook","Automatischer Befehl bei einem festen Ereignis"],["Routine","Auftrag, der nach Zeitplan oder Ereignis startet"],["Plugin","Paket aus Skills, Subagenten, Hooks und Anbindungen"]]},
+
+  {id:"mcp", title:"MCP und der Weg zum eigenen Agenten", min:5, cats:["werkzeug"],
+   lead:"Über MCP greift Claude auf Systeme wie Notion, Google Drive oder Jira zu. Wer einen Agenten nicht nur nutzen, sondern selbst bauen will, verwendet denselben Harness als Baukasten. Diese Lektion schließt den Lernpfad ab.",
+   blocks:[
+    {h:"MCP in der Praxis"},
+    {p:"Ein MCP-Server ist eine Schnittstelle, die ein System für KI-Anwendungen bereitstellt. Er kann drei Dinge anbieten: Werkzeuge (Aktionen wie „Seite anlegen“), Ressourcen (Inhalte zum Lesen) und vorgefertigte Prompts. In Claude Code fügt man einen Server mit einem Befehl hinzu. Er läuft entweder lokal auf dem Rechner oder als Dienst im Netz. In claude.ai heißen solche Anbindungen Connectors; sie stehen dann auch in Claude Code zur Verfügung."},
+    {h:"Worauf es bei der Anbindung ankommt"},
+    {table:["Frage","Warum sie wichtig ist"], rows:[
+      ["Wer betreibt den Server?","Ein Server eines Drittanbieters sieht alle Daten, die durch ihn fließen"],
+      ["Mit wessen Rechten arbeitet er?","Der Agent sollte nur sehen, was der Nutzer selbst sehen darf"],
+      ["Welche Werkzeuge sind freigegeben?","Lesen und Schreiben getrennt freigeben, kritische Aktionen nur mit Bestätigung"],
+      ["Was kommt zurück?","Inhalte aus angebundenen Systemen können versteckte Anweisungen enthalten (Prompt Injection)"]]},
+    {h:"Der Lernpfad im Überblick"},
+    {flow:[
+      ["Prompts","Gute Briefings schreiben und wiederverwenden"],
+      ["Claude Code","Den Agenten im eigenen Arbeitsalltag einsetzen"],
+      ["Gedächtnis","CLAUDE.md und Auto Memory gezielt pflegen"],
+      ["Skills, Hooks, Routinen","Wiederkehrende Arbeit standardisieren und absichern"],
+      ["MCP","Die eigenen Systeme anbinden"],
+      ["Eigener Agent","Den Harness mit dem Claude Agent SDK in eine eigene Anwendung einbauen oder als Managed Agent von Anthropic betreiben lassen"]]},
+    {p:"Das Claude Agent SDK ist eine Bibliothek für Python und TypeScript. Sie stellt dieselbe Arbeitsschleife und dieselben Werkzeuge bereit, die Claude Code nutzt. Bei Managed Agents betreibt Anthropic den Harness, die Sitzungen laufen in einer abgeschotteten Umgebung. Wer einen Agenten für einen Kunden oder ein Produkt baut, fängt also nicht bei null an. Der Unterschied liegt im Harness für den konkreten Anwendungsfall: Kontext, Regeln, Prüfungen und Nachweise."},
+    {callout:"Für das Kundengespräch", text:"Einen Agenten zu bauen ist technisch leicht geworden. Schwer ist, ihn zuverlässig, prüfbar und sicher zu machen. Dort liegt der Wert: im Harness und im Fachwissen, nicht im Modell."}
+   ],
+   take:["MCP-Server bieten Werkzeuge, Ressourcen und Prompts; in claude.ai heißen sie Connectors.",
+         "Bei jeder Anbindung zählen Betreiber, Rechte, freigegebene Werkzeuge und das Risiko versteckter Anweisungen.",
+         "Das Agent SDK macht den Harness von Claude Code als Baukasten nutzbar. Der Wert entsteht im Harness, nicht im Modell."],
+   terms:[["MCP-Server","Schnittstelle, die ein System für KI-Anwendungen bereitstellt"],["Connector","Bezeichnung für MCP-Anbindungen in claude.ai"],["Claude Agent SDK","Bibliothek mit der Arbeitsschleife von Claude Code für eigene Anwendungen"],["Managed Agents","Von Anthropic betriebener Agenten-Harness"]]}
 ];
 
 /* ============================================================ */
